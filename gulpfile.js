@@ -36,6 +36,9 @@ const gulp_postcss = require('gulp-postcss')
 
 ///
 // Functional helpers
+//
+// These are not currently used in this demo; 
+// these are for people who want to extend this demo.
 ///
 
 // Nickname for a nonexistent item
@@ -50,6 +53,9 @@ const unfold = (f, initState) =>
 
 ///
 // File helpers
+//
+// These are not currently used in this demo; 
+// these are for people who want to extend this demo.
 ///
 
 // Read a directory and return its relative paths.
@@ -72,6 +78,9 @@ const readdirRecursive = (dir) =>
 
 ///
 // Configuration
+//
+// We prefer to do configuration via a config object,
+// rather than doing configuration in each gulp task.
 ///
 
 let config = {
