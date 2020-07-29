@@ -1,4 +1,22 @@
+///
 // Demo of Gulp for JavaScript transformations
+//
+// This demo shows various ways of using Gulp and related tools:
+//
+//   * Autoprefixer
+//
+//   * Tailwind CSS for styles
+//
+//   * Mustache for HTML web page templates and partials
+//
+// This demo also shows helpful capabilties:
+//
+//   * Pino logger
+//
+//   * Functional tools to unfold asynchronous listings
+//
+//   * File tools to read directory relative paths and recursive paths.
+///
 
 // Require a logger; we prefer the pino logger because it's fast and easy.
 const logger = require('pino')()
@@ -12,6 +30,8 @@ const fs = require('fs')
 
 // Require gulp and related tools
 const gulp = require('gulp')
+const gulp_concat = require('gulp-concat')
+const gulp_mustache = require('gulp-mustache')
 const gulp_postcss = require('gulp-postcss')
 
 ///
@@ -57,10 +77,24 @@ const readdirRecursive = (dir) =>
 let config = {
     paths: {
         src: {
-            css: './src/assets/styles'
+            html: [
+                './src/html/**/*.html'
+            ],
+            images: [
+                './src/assets/images/**/*.{jpg,png,svg}'
+            ],
+            styles: [
+                './src/assets/styles/**/*.css'
+            ],
+            templates: [
+                './src/templates/**/*.html'
+            ]
         },
-        dst: {
-            css: './dist/assets/styles'
+        dist: {
+            html: './dist/html',
+            images: './dist/assets/images',
+            styles: './dist/assets/styles',
+            templates: './dist/templates'
         }
     }
 };
@@ -69,28 +103,40 @@ let config = {
 // Process
 ///
 
-// Process one CSS file, from a source file path to a destination file path.
-function css_helper(src_file, dst_file) {
-    gulp.src(src_file)
+// Process HTML files: copy from src to dst
+function html(cb) {
+    gulp.src(config.paths.src.html)
+        .pipe(gulp.dest(config.paths.dist.html))
+    cb()
+}
+
+// Process image files: copy from src to dst
+function images(cb) {
+    gulp.src(config.paths.src.images)
+        .pipe(gulp.dest(config.paths.dist.images))
+    cb()
+}
+
+// Process template files: use mustache to reify HTML templates
+function templates(cb) {
+    gulp.src(config.paths.src.templates)
+    .pipe(gulp_mustache())
+    .pipe(gulp.dest(config.paths.dist.templates))
+    cb()
+}
+
+// Process style files: use Tailwind CSS and Autoprefix
+function styles(cb) {
+    gulp.src(config.paths.src.styles)
         .pipe(gulp_postcss([
             require('tailwindcss'),
             require('autoprefixer'),
         ]))
-        .pipe(gulp.dest(path.dirname(dst_file)))
-}
-
-// Process all CSS files, from source file paths to destination file paths.
-function css(cb) {
-    let src_path = config.paths.src.css
-    let dst_path = config.paths.dst.css
-    readdirRecursive(src_path)
-    .filter(sub_path => sub_path.endsWith(".css"))
-    .map(sub_path => sub_path.substring(src_path.length - 1))
-    .forEach(sub_path => {
-        logger.info('sub_path:' + sub_path)
-        css_helper(path.join(src_path, sub_path), path.join(dst_path, sub_path))
-    })
+        .pipe(gulp.dest(config.paths.dist.styles))
     cb()
 }
 
-exports.css = css;
+exports.html = html;
+exports.images = images;
+exports.styles = styles;
+exports.templates = templates;
